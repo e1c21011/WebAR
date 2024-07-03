@@ -27,8 +27,13 @@
     // 基本的なThree.jsの設定
     var scene = new THREE.Scene();
     var camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1000);
-    var renderer = new THREE.WebGLRenderer({ alpha: true });
+    var renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.domElement.style.position = 'absolute';
+    renderer.domElement.style.top = '0px';
+    renderer.domElement.style.left = '0px';
+    renderer.domElement.style.width = '100%';
+    renderer.domElement.style.height = '100%';
     document.body.appendChild(renderer.domElement);
 
     // AR.jsの設定
@@ -79,12 +84,31 @@
     object.position.y = 0.5;
     scene.add(object);
 
+    // 床認識のフィードバック
+    var floorDetected = false;
+
+    function updateFloorDetection() {
+      // 仮の床検出ロジック（実際の床認識アルゴリズムを使用する場合は置き換えてください）
+      if (Math.random() > 0.9) { // デモ用のランダムな検出
+        if (!floorDetected) {
+          floor.material.color.set(0x0000ff); // 床が認識された場合に色を青に変更
+          floorDetected = true;
+        }
+      } else {
+        if (floorDetected) {
+          floor.material.color.set(0x00ff00); // 床が認識されていない場合に色を緑に戻す
+          floorDetected = false;
+        }
+      }
+    }
+
     // アニメーションループ
     function animate() {
       requestAnimationFrame(animate);
       if (arToolkitSource.ready) {
         arToolkitContext.update(arToolkitSource.domElement);
       }
+      updateFloorDetection();
       renderer.render(scene, camera);
     }
 
