@@ -1,118 +1,68 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WebAR Floor Detection</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.3.2/aframe/build/aframe-ar.js"></script>
-  <style>
-    body {
-      margin: 0;
-      overflow: hidden;
-    }
-    #info {
-      position: absolute;
-      top: 10px;
-      width: 100%;
-      text-align: center;
-      color: #fff;
-      z-index: 1;
-    }
-  </style>
-</head>
-<body>
-  <div id="info">Move your device to detect the floor and place the object.</div>
-  <script>
-    // 基本的なThree.jsの設定
-    var scene = new THREE.Scene();
-    var camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1000);
-    var renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.domElement.style.position = 'absolute';
-    renderer.domElement.style.top = '0px';
-    renderer.domElement.style.left = '0px';
-    renderer.domElement.style.width = '100%';
-    renderer.domElement.style.height = '100%';
-    document.body.appendChild(renderer.domElement);
-
-    // AR.jsの設定
-    var arToolkitSource = new THREEx.ArToolkitSource({
-      sourceType: 'webcam',
-    });
-
-    arToolkitSource.init(function onReady() {
-      onResize();
-    });
-
-    window.addEventListener('resize', function () {
-      onResize();
-    });
-
-    function onResize() {
-      arToolkitSource.onResizeElement();
-      arToolkitSource.copyElementSizeTo(renderer.domElement);
-      if (arToolkitContext.arController !== null) {
-        arToolkitSource.copyElementSizeTo(arToolkitContext.arController.canvas);
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WebAR Floor Detection</title>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.3.2/aframe/build/aframe-ar.js"></script>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
       }
-    }
-
-    var arToolkitContext = new THREEx.ArToolkitContext({
-      cameraParametersUrl: 'https://cdn.rawgit.com/AR-js-org/AR.js/3.1.1/three.js/examples/marker-training/examples/camera_para.dat',
-      detectionMode: 'mono',
-    });
-
-    arToolkitContext.init(function onCompleted() {
-      camera.projectionMatrix.copy(arToolkitContext.getProjectionMatrix());
-    });
-
-    // 床検出用のプレーン
-    var floorGeometry = new THREE.PlaneGeometry(100, 100);
-    var floorMaterial = new THREE.MeshBasicMaterial({
-      color: 0x00ff00,
-      side: THREE.DoubleSide,
-    });
-    var floor = new THREE.Mesh(floorGeometry, floorMaterial);
-    floor.rotation.x = -Math.PI / 2;
-    floor.position.y = -1;
-    scene.add(floor);
-
-    // オブジェクト
-    var objectGeometry = new THREE.BoxGeometry(1, 1, 1);
-    var objectMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-    var object = new THREE.Mesh(objectGeometry, objectMaterial);
-    object.position.y = 0.5;
-    scene.add(object);
-
-    // 床認識のフィードバック
-    var floorDetected = false;
-
-    function updateFloorDetection() {
-      // 仮の床検出ロジック（実際の床認識アルゴリズムを使用する場合は置き換えてください）
-      if (Math.random() > 0.9) { // デモ用のランダムな検出
-        if (!floorDetected) {
-          floor.material.color.set(0x0000ff); // 床が認識された場合に色を青に変更
-          floorDetected = true;
-        }
-      } else {
-        if (floorDetected) {
-          floor.material.color.set(0x00ff00); // 床が認識されていない場合に色を緑に戻す
-          floorDetected = false;
-        }
+      #info {
+        position: absolute;
+        top: 10px;
+        width: 100%;
+        text-align: center;
+        color: #fff;
+        z-index: 1;
       }
-    }
+    </style>
+  </head>
+  <body>
+    <div id="info">Move your device to detect the floor and place the object.</div>
+    <a-scene
+      vr-mode-ui="enabled: false"
+      embedded
+      arjs="sourceType: webcam; videoTexture: true; debugUIEnabled: false;"
+    >
+      <!-- カメラ -->
+      <a-marker-camera preset="hiro"></a-marker-camera>
 
-    // アニメーションループ
-    function animate() {
-      requestAnimationFrame(animate);
-      if (arToolkitSource.ready) {
-        arToolkitContext.update(arToolkitSource.domElement);
-      }
-      updateFloorDetection();
-      renderer.render(scene, camera);
-    }
+      <!-- 床の表示 -->
+      <a-plane
+        position="0 0 0"
+        rotation="-90 0 0"
+        width="100"
+        height="100"
+        color="#00FF00"
+        shadow
+        id="floor"
+      ></a-plane>
 
-    animate();
-  </script>
-</body>
+      <!-- オブジェクト -->
+      <a-box
+        position="0 0.5 0"
+        rotation="0 45 0"
+        color="#FF0000"
+        shadow
+      ></a-box>
+    </a-scene>
+    <script>
+      AFRAME.registerComponent("detect-floor", {
+        init: function () {
+          this.el.sceneEl.addEventListener("enter-vr", () => {
+            this.el.setAttribute("visible", true);
+          });
+          this.el.sceneEl.addEventListener("exit-vr", () => {
+            this.el.setAttribute("visible", false);
+          });
+        },
+      });
+
+      document.querySelector("#floor").setAttribute("detect-floor", "");
+    </script>
+  </body>
 </html>
