@@ -1,118 +1,16 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>ARCore with WebXR</title>
-  <style>
-    body { margin: 0; }
-    canvas { display: block; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebAR with ARCore</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://rawcdn.githack.com/google-ar/three.ar.js/master/build/ar.js"></script>
 </head>
 <body>
-  <button id="start-ar">Enter AR</button>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script>
-    let xrSession = null;
-    let xrHitTestSource = null;
-    let xrRefSpace = null;
-    let gl = null;
-    let renderer = null;
-    let scene = null;
-    let camera = null;
-    let reticle = null;
-    
-    document.getElementById('start-ar').addEventListener('click', async () => {
-      if (navigator.xr) {
-        const supported = await navigator.xr.isSessionSupported('immersive-ar');
-        if (supported) {
-          navigator.xr.requestSession('immersive-ar', {
-            requiredFeatures: ['local', 'hit-test']
-          }).then(onSessionStarted);
-        } else {
-          console.log('AR not supported');
-        }
-      }
-    });
-
-    function onSessionStarted(session) {
-      xrSession = session;
-      xrSession.addEventListener('end', onSessionEnded);
-
-      let canvas = document.createElement('canvas');
-      gl = canvas.getContext('webgl', { xrCompatible: true });
-      session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
-
-      session.requestReferenceSpace('viewer').then((refSpace) => {
-        xrSession.requestHitTestSource({ space: refSpace }).then((hitTestSource) => {
-          xrHitTestSource = hitTestSource;
-        });
-      });
-
-      session.requestReferenceSpace('local').then((refSpace) => {
-        xrRefSpace = refSpace;
-        initThreeJS();
-        xrSession.requestAnimationFrame(onXRFrame);
-      });
-    }
-
-    function onXRFrame(time, frame) {
-      let session = frame.session;
-      session.requestAnimationFrame(onXRFrame);
-
-      let viewerPose = frame.getViewerPose(xrRefSpace);
-      if (viewerPose) {
-        const viewport = session.renderState.baseLayer.getViewport(viewerPose.views[0]);
-        gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height);
-
-        reticle.visible = false;
-        const hitTestResults = frame.getHitTestResults(xrHitTestSource);
-        if (hitTestResults.length > 0) {
-          const hit = hitTestResults[0];
-          const hitPose = hit.getPose(xrRefSpace);
-          reticle.visible = true;
-          reticle.position.set(hitPose.transform.position.x, hitPose.transform.position.y, hitPose.transform.position.z);
-          reticle.updateMatrixWorld(true);
-        }
-
-        renderer.render(scene, camera);
-      }
-    }
-
-    function onSessionEnded() {
-      xrSession = null;
-      xrHitTestSource = null;
-      if (renderer) renderer.setAnimationLoop(null);
-    }
-
-    function initThreeJS() {
-      renderer = new THREE.WebGLRenderer({ alpha: true, preserveDrawingBuffer: true, context: gl });
-      renderer.autoClear = false;
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      document.body.appendChild(renderer.domElement);
-
-      scene = new THREE.Scene();
-
-      camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 20);
-      scene.add(camera);
-
-      const geometry = new THREE.CubeGeometry(0.1, 0.1, 0.1);
-      const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-      reticle = new THREE.Mesh(geometry, material);
-      reticle.visible = false;
-      scene.add(reticle);
-
-      xrSession.addEventListener('select', onSelect);
-    }
-
-    function onSelect() {
-      if (reticle.visible) {
-        const geometry = new THREE.CubeGeometry(0.1, 0.1, 0.1);
-        const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-        const cube = new THREE.Mesh(geometry, material);
-        cube.position.copy(reticle.position);
-        scene.add(cube);
-      }
-    }
-  </script>
+    <div id="container"></div>
+    <script>
+        // Your AR initialization code will go here
+    </script>
 </body>
 </html>
