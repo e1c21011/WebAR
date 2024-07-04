@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IndirectAR Example</title>
+  <title>External Camera Example</title>
   <style>
     body {
       margin: 0;
@@ -15,40 +15,36 @@
       background-color: #000;
     }
     video {
-      position: absolute;
       width: 100%;
-      height: 100%;
-      object-fit: cover;
-      z-index: -1;
-    }
-    canvas {
-      position: absolute;
-      width: 100%;
-      height: 100%;
+      height: auto;
     }
   </style>
 </head>
 <body>
-  <video id="video" playsinline autoplay></video>
-  <canvas id="canvas"></canvas>
+  <video id="video" autoplay></video>
   <script>
-    navigator.mediaDevices.getUserMedia({ video: true })
-      .then(function(stream) {
+    async function startExternalCamera() {
+      const constraints = {
+        video: {
+          facingMode: 'environment'  // 外部カメラを指定
+        }
+      };
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
         const video = document.getElementById('video');
         video.srcObject = stream;
-        video.onloadedmetadata = function(e) {
+        video.onloadedmetadata = () => {
           video.play();
-          const canvas = document.getElementById('canvas');
-          canvas.width = video.videoWidth;
-          canvas.height = video.videoHeight;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-          // ここに仮想オブジェクトを描画するコードを追加します
         };
-      })
-      .catch(function(err) {
-        console.error('カメラの起動に失敗しました: ', err);
-      });
+      } catch (error) {
+        console.error('カメラの起動に失敗しました: ', error);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      startExternalCamera();
+    });
   </script>
 </body>
 </html>
