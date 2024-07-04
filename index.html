@@ -54,7 +54,12 @@
       renderer.xr.enabled = true;
       container.appendChild(renderer.domElement);
 
-      document.body.appendChild(ARButton.createButton(renderer, { requiredFeatures: ['hit-test'] }));
+      // Removed ARButton.createButton to implement custom button
+      document.getElementById('enter-ar').addEventListener('click', () => {
+        navigator.xr.requestSession('immersive-ar', {
+          requiredFeatures: ['hit-test']
+        }).then(onSessionStarted);
+      });
 
       const geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
       const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
@@ -75,6 +80,16 @@
       scene.add(controller);
 
       window.addEventListener('resize', onWindowResize, false);
+    }
+
+    function onSessionStarted(session) {
+      session.addEventListener('end', onSessionEnded);
+      renderer.xr.setSession(session);
+      document.getElementById('enter-ar').style.display = 'none';
+    }
+
+    function onSessionEnded(event) {
+      document.getElementById('enter-ar').style.display = 'block';
     }
 
     function onSelect() {
