@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WebAR with A-Frame and AR.js</title>
+  <title>AR.js with PLY Model</title>
   <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.3.2/aframe/build/aframe-ar.js"></script>
   <style>
@@ -11,22 +11,24 @@
       margin: 0;
       overflow: hidden;
     }
-    #info {
-      position: absolute;
-      top: 10px;
-      width: 100%;
-      text-align: center;
-      color: #fff;
-      z-index: 1;
-    }
   </style>
 </head>
 <body>
-  <div id="info">Point the camera at the marker to see the object.</div>
-  <a-scene embedded arjs="sourceType: webcam; videoTexture: true; debugUIEnabled: false;">
+  <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
+    <a-assets>
+      <a-asset-item id="plyModel" src="example.ply"></a-asset-item>
+    </a-assets>
+
     <a-marker preset="hiro">
-      <a-box position="0 0.5 0" rotation="0 45 0" color="#FF0000" shadow></a-box>
+      <a-entity
+        position="0 0 0"
+        rotation="0 0 0"
+        scale="0.05 0.05 0.05"
+        ply-model="src: #plyModel"
+        material="color: red;"
+      ></a-entity>
     </a-marker>
+    
     <a-entity camera></a-entity>
   </a-scene>
 </body>
