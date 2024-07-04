@@ -10,7 +10,7 @@
 <body>
     <div id="container"></div>
     <script>
-        // Your AR initialization code will go here
+        // ARの初期化コードはここに配置します
         const container = document.getElementById('container');
         
         let camera, scene, renderer;
@@ -70,7 +70,7 @@
         navigator.xr.requestSession('immersive-ar', { requiredFeatures: ['hit-test'] })
             .then(onSessionStarted);
         
-        function onSessionStarted(session) {
+        async function onSessionStarted(session) {
             renderer.xr.setSession(session);
         
             const referenceSpace = await session.requestReferenceSpace('local');
