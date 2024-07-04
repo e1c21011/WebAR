@@ -1,68 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>WebAR Floor Detection</title>
-    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.3.2/aframe/build/aframe-ar.js"></script>
-    <style>
-      body {
-        margin: 0;
-        overflow: hidden;
-      }
-      #info {
-        position: absolute;
-        top: 10px;
-        width: 100%;
-        text-align: center;
-        color: #fff;
-        z-index: 1;
-      }
-    </style>
-  </head>
-  <body>
-    <div id="info">Move your device to detect the floor and place the object.</div>
-    <a-scene
-      vr-mode-ui="enabled: false"
-      embedded
-      arjs="sourceType: webcam; videoTexture: true; debugUIEnabled: false;"
-    >
-      <!-- カメラ -->
-      <a-marker-camera preset="hiro"></a-marker-camera>
-
-      <!-- 床の表示 -->
-      <a-plane
-        position="0 0 0"
-        rotation="-90 0 0"
-        width="100"
-        height="100"
-        color="#00FF00"
-        shadow
-        id="floor"
-      ></a-plane>
-
-      <!-- オブジェクト -->
-      <a-box
-        position="0 0.5 0"
-        rotation="0 45 0"
-        color="#FF0000"
-        shadow
-      ></a-box>
-    </a-scene>
-    <script>
-      AFRAME.registerComponent("detect-floor", {
-        init: function () {
-          this.el.sceneEl.addEventListener("enter-vr", () => {
-            this.el.setAttribute("visible", true);
-          });
-          this.el.sceneEl.addEventListener("exit-vr", () => {
-            this.el.setAttribute("visible", false);
-          });
-        },
-      });
-
-      document.querySelector("#floor").setAttribute("detect-floor", "");
-    </script>
-  </body>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WebAR with A-Frame and AR.js</title>
+  <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.3.2/aframe/build/aframe-ar.js"></script>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+    #info {
+      position: absolute;
+      top: 10px;
+      width: 100%;
+      text-align: center;
+      color: #fff;
+      z-index: 1;
+    }
+  </style>
+</head>
+<body>
+  <div id="info">Point the camera at the marker to see the object.</div>
+  <a-scene embedded arjs="sourceType: webcam; videoTexture: true; debugUIEnabled: false;">
+    <a-marker preset="hiro">
+      <a-box position="0 0.5 0" rotation="0 45 0" color="#FF0000" shadow></a-box>
+    </a-marker>
+    <a-entity camera></a-entity>
+  </a-scene>
+</body>
 </html>
