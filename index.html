@@ -15,7 +15,9 @@
         if (navigator.xr) {
             navigator.xr.requestSession('immersive-ar', {
                 requiredFeatures: ['hit-test']
-            }).then(onSessionStarted);
+            }).then(onSessionStarted).catch(err => {
+                console.error('Failed to start AR session:', err);
+            });
         } else {
             alert('WebXR is not supported on this device');
         }
@@ -30,6 +32,7 @@
             const scene = new THREE.Scene();
             const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 20);
 
+            // Light
             const light = new THREE.DirectionalLight(0xffffff, 1);
             light.position.set(1, 1, 1).normalize();
             scene.add(light);
@@ -48,13 +51,17 @@
 
                 function onXRFrame(time, frame) {
                     session.requestAnimationFrame(onXRFrame);
-                    const pose = frame.getViewerPose(refSpace);
 
+                    const pose = frame.getViewerPose(refSpace);
                     if (pose) {
-                        const inputSource = session.inputSources[0];
-                        if (inputSource && inputSource.targetRayMode === 'screen') {
-                            // Handle touch interaction or hit-test here
-                        }
+                        // Ensure the camera's aspect ratio is correct
+                        camera.aspect = window.innerWidth / window.innerHeight;
+                        camera.updateProjectionMatrix();
+
+                        // Update camera position
+                        const { position } = pose.transform;
+                        camera.position.set(position.x, position.y, position.z);
+                        camera.updateMatrixWorld(true);
 
                         // Render the scene
                         renderer.render(scene, camera);
