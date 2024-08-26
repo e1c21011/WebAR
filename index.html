@@ -1,47 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WebXR ARCore Test</title>
-  <style>body { margin: 0; }</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebXR AR Sample</title>
+    <style>
+        body { margin: 0; }
+        canvas { display: block; }
+    </style>
 </head>
 <body>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.150.0/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.150.0/examples/jsm/ARButton.js"></script>
-  <script>
-    // シーン、カメラ、レンダラーのセットアップ
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 20);
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.xr.enabled = true;
-    document.body.appendChild(renderer.domElement);
+    <script>
+        // Check if WebXR is supported
+        if (navigator.xr) {
+            navigator.xr.requestSession('immersive-ar', {
+                requiredFeatures: ['hit-test']
+            }).then(onSessionStarted);
+        } else {
+            alert('WebXR is not supported on this device');
+        }
 
-    // ARボタンの追加
-    document.body.appendChild(ARButton.createButton(renderer, { requiredFeatures: ['hit-test'] }));
+        async function onSessionStarted(session) {
+            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.xr.enabled = true;
+            renderer.xr.setReferenceSpaceType('local');
+            document.body.appendChild(renderer.domElement);
 
-    // 簡単なボックスオブジェクトを作成
-    const geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
-    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-    const cube = new THREE.Mesh(geometry, material);
-    cube.position.set(0, 0, -0.5); // カメラの前方に配置
-    scene.add(cube);
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 20);
 
-    // レンダリングループ
-    function animate() {
-      renderer.setAnimationLoop(() => {
-        renderer.render(scene, camera);
-      });
-    }
-    animate();
+            const light = new THREE.DirectionalLight(0xffffff, 1);
+            light.position.set(1, 1, 1).normalize();
+            scene.add(light);
 
-    // リサイズ対応
-    window.addEventListener('resize', () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    });
-  </script>
+            // Add a sample 3D object (a cube)
+            const geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
+            const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+            const cube = new THREE.Mesh(geometry, material);
+            scene.add(cube);
+
+            const controller = renderer.xr.getController(0);
+            scene.add(controller);
+
+            session.requestReferenceSpace('local').then((refSpace) => {
+                session.requestAnimationFrame(onXRFrame);
+
+                function onXRFrame(time, frame) {
+                    session.requestAnimationFrame(onXRFrame);
+                    const pose = frame.getViewerPose(refSpace);
+
+                    if (pose) {
+                        const inputSource = session.inputSources[0];
+                        if (inputSource && inputSource.targetRayMode === 'screen') {
+                            // Handle touch interaction or hit-test here
+                        }
+
+                        // Render the scene
+                        renderer.render(scene, camera);
+                    }
+                }
+            });
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.139.2/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.139.2/examples/js/WebXR.js"></script>
 </body>
 </html>
